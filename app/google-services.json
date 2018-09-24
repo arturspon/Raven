@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "344338787994",
+    "firebase_url": "https://raven-6d313.firebaseio.com",
+    "project_id": "raven-6d313",
+    "storage_bucket": "raven-6d313.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:344338787994:android:e9285df364f184f0",
+        "android_client_info": {
+          "package_name": "br.edu.uffs.raven"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "344338787994-qhi0ljrfdtaskutlumakl8ag70q07b7t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQv3Cr9J8I1fCoyEydH4WoSQj9tIYYFBE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
