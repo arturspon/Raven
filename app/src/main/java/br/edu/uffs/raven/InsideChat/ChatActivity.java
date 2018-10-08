@@ -30,6 +30,6 @@ public class ChatActivity extends AppCompatActivity {
         etMessage = findViewById(R.id.etMessage);
         btnSendMsg = findViewById(R.id.btnSendMsg);
 
-
+        
     }
 }

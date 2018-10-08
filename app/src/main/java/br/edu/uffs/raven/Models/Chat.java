@@ -4,11 +4,13 @@ import com.google.firebase.firestore.ServerTimestamp;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class Chat {
     private String id;
-    private ArrayList<String> usersName;
-    private ArrayList<String> usersIds;
+    private List<String> usersName;
+    private List<String> usersIds;
+    private String groupId;
     @ServerTimestamp
     private Date createdAt;
 
@@ -20,19 +22,19 @@ public class Chat {
         this.id = id;
     }
 
-    public ArrayList<String> getUsersName() {
+    public List<String> getUsersName() {
         return usersName;
     }
 
-    public void setUsersName(ArrayList<String> usersName) {
+    public void setUsersName(List<String> usersName) {
         this.usersName = usersName;
     }
 
-    public ArrayList<String> getUsersIds() {
+    public List<String> getUsersIds() {
         return usersIds;
     }
 
-    public void setUsersIds(ArrayList<String> usersIds) {
+    public void setUsersIds(List<String> usersIds) {
         this.usersIds = usersIds;
     }
 
@@ -42,5 +44,13 @@ public class Chat {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 }

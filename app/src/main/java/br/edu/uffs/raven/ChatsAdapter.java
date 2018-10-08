@@ -45,11 +45,16 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder>{
     public void onBindViewHolder(@NonNull ChatsAdapter.ViewHolder holder, int position) {
         final Chat chat = chats.get(position);
 
+        int aux = chat.getUsersIds().indexOf(ProfileHelper.getUserId());
+
         // Username
-        if(chat.getUsersIds().get(0).equals(ProfileHelper.getUserId()))
+        if(chat.getUsersIds().get(0).equals(ProfileHelper.getUserId())) {
             holder.txtUsername.setText(chat.getUsersName().get(0));
-        else
+        }
+        else {
             holder.txtUsername.setText(chat.getUsersName().get(1));
+        }
+
 
         // Last message text and time
         getLastMessage(chat.getId(), holder.txtLastMessage, holder.txtTime);
