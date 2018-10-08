@@ -1,14 +1,20 @@
 package br.edu.uffs.raven;
 
+import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -32,16 +38,19 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvChats;
     private ProgressBar progressBar;
     private Button btnSignOut;
+    private FloatingActionButton fabNewChat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         // Referencing
         rvChats = findViewById(R.id.rvChats);
         progressBar = findViewById(R.id.progressBar);
         btnSignOut = findViewById(R.id.btnSignOut);
+        fabNewChat = findViewById(R.id.fabNewChat);
 
         btnSignOut.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,7 +61,40 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        fabNewChat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                newChatDialog();
+            }
+        });
+
         getChats();
+    }
+
+    private void newChatDialog(){
+        View view = getLayoutInflater().inflate(R.layout.dialog_new_chat, null);
+        final EditText etEmail = view.findViewById(R.id.etEmail);
+        Button btnStartChat = view.findViewById(R.id.btnStartChat);
+
+        btnStartChat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!etEmail.getText().toString().trim().isEmpty()){
+
+                }else{
+                    Toast.makeText(MainActivity.this,
+                            "Digite um email para continuar",
+                            Toast.LENGTH_SHORT)
+                            .show();
+                }
+            }
+        });
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Email do destinatário");
+        builder.setView(view);
+        builder.setNegativeButton("Cancelar", null);
+        builder.show();
     }
 
     private void getChats(){
