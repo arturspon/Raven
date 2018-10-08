@@ -2,13 +2,15 @@ package br.edu.uffs.raven.Models;
 
 import com.google.firebase.firestore.ServerTimestamp;
 
+import java.util.Date;
+
 public class User {
     private String id;
     private String email;
     private String name;
     private String picture;
     @ServerTimestamp
-    private String createdAt;
+    private Date createdAt;
 
     public String getId() {
         return id;
@@ -42,11 +44,11 @@ public class User {
         this.picture = picture;
     }
 
-    public String getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(String createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 }

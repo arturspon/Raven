@@ -1,15 +1,18 @@
 package br.edu.uffs.raven;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -28,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     // UI
     private RecyclerView rvChats;
     private ProgressBar progressBar;
+    private Button btnSignOut;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +41,16 @@ public class MainActivity extends AppCompatActivity {
         // Referencing
         rvChats = findViewById(R.id.rvChats);
         progressBar = findViewById(R.id.progressBar);
+        btnSignOut = findViewById(R.id.btnSignOut);
+
+        btnSignOut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                FirebaseAuth.getInstance().signOut();
+                finish();
+            }
+        });
 
         getChats();
     }
