@@ -1,6 +1,7 @@
 package br.edu.uffs.raven;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import br.edu.uffs.raven.Helpers.ProfileHelper;
+import br.edu.uffs.raven.InsideChat.ChatActivity;
 import br.edu.uffs.raven.Models.Chat;
 import br.edu.uffs.raven.Models.Message;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -45,16 +47,22 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder>{
     public void onBindViewHolder(@NonNull ChatsAdapter.ViewHolder holder, int position) {
         final Chat chat = chats.get(position);
 
-        int aux = chat.getUsersIds().indexOf(ProfileHelper.getUserId());
-
         // Username
         if(chat.getUsersIds().get(0).equals(ProfileHelper.getUserId())) {
-            holder.txtUsername.setText(chat.getUsersName().get(0));
-        }
-        else {
             holder.txtUsername.setText(chat.getUsersName().get(1));
         }
+        else {
+            holder.txtUsername.setText(chat.getUsersName().get(0));
+        }
 
+        holder.rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, ChatActivity.class);
+                intent.putExtra("chatId", chat.getId());
+                context.startActivity(intent);
+            }
+        });
 
         // Last message text and time
         getLastMessage(chat.getId(), holder.txtLastMessage, holder.txtTime);
@@ -66,11 +74,13 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder>{
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        View rootView;
         CircleImageView civProfilePicture;
         TextView txtUsername, txtLastMessage, txtTime;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            rootView = itemView.findViewById(R.id.rootView);
             civProfilePicture = itemView.findViewById(R.id.civProfilePicture);
             txtUsername = itemView.findViewById(R.id.txtUsername);
             txtLastMessage = itemView.findViewById(R.id.txtLastMessage);

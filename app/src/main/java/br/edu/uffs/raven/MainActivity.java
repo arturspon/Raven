@@ -19,15 +19,20 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import br.edu.uffs.raven.Helpers.ProfileHelper;
+import br.edu.uffs.raven.InsideChat.ChatActivity;
 import br.edu.uffs.raven.Models.Chat;
+import br.edu.uffs.raven.Models.User;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         // Referencing
         rvChats = findViewById(R.id.rvChats);
@@ -74,13 +78,101 @@ public class MainActivity extends AppCompatActivity {
     private void newChatDialog(){
         View view = getLayoutInflater().inflate(R.layout.dialog_new_chat, null);
         final EditText etEmail = view.findViewById(R.id.etEmail);
-        Button btnStartChat = view.findViewById(R.id.btnStartChat);
+        final Button btnStartChat = view.findViewById(R.id.btnStartChat);
 
         btnStartChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(!etEmail.getText().toString().trim().isEmpty()){
+                    etEmail.setEnabled(false);
+                    btnStartChat.setEnabled(false);
+                    btnStartChat.setText("Aguarde...");
+                    db.collection("users")
+                            .whereEqualTo("email", etEmail.getText().toString())
+                            .get()
+                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    if(task.isSuccessful()){
+                                        User userSearched = null;
+                                        for(DocumentSnapshot snap : task.getResult()){
+                                            userSearched = snap.toObject(User.class);
+                                        }
+                                        final User finalUserSearched = userSearched;
+                                        if(userSearched != null){
+                                            db.collection("chats")
+                                                    .whereArrayContains("usersIds", ProfileHelper.getUserId())
+                                                    .get()
+                                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                            if(task.isSuccessful()) {
+                                                                List<Chat> chats = new ArrayList<>();
+                                                                for (DocumentSnapshot snap : task.getResult()) {
+                                                                    chats.add(snap.toObject(Chat.class));
+                                                                }
+                                                                boolean chatFound = false;
+                                                                for(Chat chat : chats){
+                                                                    if(chat.getGroupId() == null
+                                                                            && chat.getUsersIds().contains(finalUserSearched.getId())){
+                                                                        Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
+                                                                        chatIntent.putExtra("chatId", chat.getId());
+                                                                        startActivity(chatIntent);
+                                                                        chatFound = true;
+                                                                        break;
+                                                                    }
+                                                                }
+                                                                if(!chatFound){
+                                                                    final DocumentReference newChatRef = db.collection("chats").document();
+                                                                    Chat chatToBeCreated = new Chat();
+                                                                    chatToBeCreated.setId(newChatRef.getId());
 
+                                                                    List<String> usersName = new ArrayList<>();
+                                                                    usersName.add(ProfileHelper.getUserName());
+                                                                    usersName.add(finalUserSearched.getName());
+
+                                                                    List<String> usersId = new ArrayList<>();
+                                                                    usersId.add(ProfileHelper.getUserId());
+                                                                    usersId.add(finalUserSearched.getId());
+
+                                                                    chatToBeCreated.setUsersName(usersName);
+                                                                    chatToBeCreated.setUsersIds(usersId);
+
+                                                                    newChatRef.set(chatToBeCreated)
+                                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                @Override
+                                                                                public void onComplete(@NonNull Task<Void> task) {
+                                                                                    if(task.isSuccessful()){
+                                                                                        Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
+                                                                                        chatIntent.putExtra("chatId", newChatRef.getId());
+                                                                                        startActivity(chatIntent);
+                                                                                    }
+                                                                                }
+                                                                            });
+                                                                }
+                                                            }
+                                                        }
+                                                    });
+                                        }else{
+                                            Toast.makeText(MainActivity.this,
+                                                    "Usuário não encontrado",
+                                                    Toast.LENGTH_SHORT)
+                                                    .show();
+                                            etEmail.setEnabled(true);
+                                            btnStartChat.setEnabled(true);
+                                            btnStartChat.setText("Iniciar chat!");
+                                        }
+                                    }else{
+                                        Toast.makeText(MainActivity.this,
+                                                "Erro na conexão",
+                                                Toast.LENGTH_SHORT)
+                                                .show();
+                                        etEmail.setEnabled(true);
+                                        btnStartChat.setEnabled(true);
+                                        btnStartChat.setText("Iniciar chat!");
+                                    }
+                                }
+                            });
                 }else{
                     Toast.makeText(MainActivity.this,
                             "Digite um email para continuar",
