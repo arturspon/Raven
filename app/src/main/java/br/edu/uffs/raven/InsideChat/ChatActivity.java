@@ -54,6 +54,8 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle(getIntent().getStringExtra("username"));
 
         // Get intent's data
         chatId = getIntent().getStringExtra("chatId");
@@ -160,6 +162,7 @@ public class ChatActivity extends AppCompatActivity {
                             if(!messages.isEmpty()){
                                 setupRv(messages);
                                 itemsLoaded = messages.size();
+                                rvChat.smoothScrollToPosition(0);
                             }else{
                                 Toast.makeText(ChatActivity.this, "Seja o primeiro a mandar uma mensagem!", Toast.LENGTH_SHORT).show();
                             }
@@ -250,5 +253,9 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
+    }
 }

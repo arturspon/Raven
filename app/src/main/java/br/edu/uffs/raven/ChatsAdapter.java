@@ -47,12 +47,16 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder>{
     public void onBindViewHolder(@NonNull ChatsAdapter.ViewHolder holder, int position) {
         final Chat chat = chats.get(position);
 
+        final String username;
+
         // Username
         if(chat.getUsersIds().get(0).equals(ProfileHelper.getUserId())) {
             holder.txtUsername.setText(chat.getUsersName().get(1));
+            username = chat.getUsersName().get(1);
         }
         else {
             holder.txtUsername.setText(chat.getUsersName().get(0));
+            username = chat.getUsersName().get(0);
         }
 
         holder.rootView.setOnClickListener(new View.OnClickListener() {
@@ -60,6 +64,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder>{
             public void onClick(View view) {
                 Intent intent = new Intent(context, ChatActivity.class);
                 intent.putExtra("chatId", chat.getId());
+                intent.putExtra("username", username);
                 context.startActivity(intent);
             }
         });

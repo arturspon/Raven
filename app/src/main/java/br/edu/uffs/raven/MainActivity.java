@@ -1,10 +1,12 @@
 package br.edu.uffs.raven;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,6 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
@@ -40,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     // UI
+    private SwipeRefreshLayout srl;
     private RecyclerView rvChats;
     private ProgressBar progressBar;
     private Button btnSignOut;
@@ -55,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         btnSignOut = findViewById(R.id.btnSignOut);
         fabNewChat = findViewById(R.id.fabNewChat);
+        srl = findViewById(R.id.srl);
 
         btnSignOut.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,6 +78,16 @@ public class MainActivity extends AppCompatActivity {
         });
 
         getChats();
+
+        // If user don't have username, open dialog.
+        checkUsername();
+
+        srl.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getChats();
+            }
+        });
     }
 
     private void newChatDialog(){
@@ -204,6 +219,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         if(!chats.isEmpty()) setupRvChats(chats);
                         progressBar.setVisibility(View.GONE);
+                        srl.setRefreshing(false);
                     }
                 });
     }
@@ -211,5 +227,67 @@ public class MainActivity extends AppCompatActivity {
     private void setupRvChats(ArrayList<Chat> chats){
         rvChats.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         rvChats.setAdapter(new ChatsAdapter(this, chats));
+    }
+
+    private void checkUsername(){
+        db.collection("users")
+                .document(ProfileHelper.getUserId())
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if(documentSnapshot.getString("name") == null
+                                || documentSnapshot.getString("name").trim().isEmpty())
+                            setUsernameDialog();
+                    }
+                });
+    }
+
+    private void setUsernameDialog(){
+        View dialogView =
+                getLayoutInflater().inflate(R.layout.dialog_set_username, null);
+        final EditText etUsername = dialogView.findViewById(R.id.etUsername);
+        Button btnConfirm = dialogView.findViewById(R.id.btnConfirm);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Definir nome de usuario");
+        builder.setCancelable(false);
+        builder.setView(dialogView);
+
+        final Dialog dialog = builder.create();
+
+        btnConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!etUsername.getText().toString().trim().isEmpty()){
+                    db.collection("users")
+                            .document(ProfileHelper.getUserId())
+                            .update("name", etUsername.getText().toString())
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if(task.isSuccessful()){
+                                        Toast.makeText(MainActivity.this,
+                                                "Nome de usuário definido com sucesso!",
+                                                Toast.LENGTH_SHORT).show();
+                                        dialog.dismiss();
+                                    }else{
+                                        Toast.makeText(MainActivity.this,
+                                                "Erro, tente mais tarde.",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                }else{
+                    Toast.makeText(MainActivity.this,
+                            "Preencha seu nome de usuário para continuar",
+                            Toast.LENGTH_LONG)
+                            .show();
+                }
+            }
+        });
+
+        dialog.show();
+
     }
 }
