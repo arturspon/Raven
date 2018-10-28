@@ -1,13 +1,19 @@
 package br.edu.uffs.raven.InsideChat;
 
+import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -15,6 +21,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
@@ -24,8 +31,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import br.edu.uffs.raven.Helpers.ProfileHelper;
+import br.edu.uffs.raven.Models.Chat;
 import br.edu.uffs.raven.Models.Message;
 import br.edu.uffs.raven.R;
 
@@ -50,12 +61,25 @@ public class ChatActivity extends AppCompatActivity {
     private EditText etMessage;
     private Button btnSendMsg;
 
+    // Toolbar
+    private TextView toolbarTitle, toolbarSubtitle;
+
+    // Typing status
+    CountDownTimer countDownTimer;
+    boolean isCountDownTimerRunning;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle(getIntent().getStringExtra("username"));
+
+        toolbarTitle = findViewById(R.id.toolbarTitle);
+        toolbarSubtitle = findViewById(R.id.toolbarSubtitle);
+        toolbarTitle.setText(getIntent().getStringExtra("username"));
 
         // Get intent's data
         chatId = getIntent().getStringExtra("chatId");
@@ -65,6 +89,8 @@ public class ChatActivity extends AppCompatActivity {
         etMessage = findViewById(R.id.etMessage);
         btnSendMsg = findViewById(R.id.btnSendMsg);
 
+        chatRef = db.collection("chats").document(chatId);
+
         btnSendMsg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -72,7 +98,68 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        etMessage.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if(!charSequence.toString().trim().isEmpty()){
+                    if(isCountDownTimerRunning)countDownTimer.cancel();
+                    typingTimer();
+                }else{
+                    chatRef.update("typersList", FieldValue.arrayRemove(ProfileHelper.getUserId()));
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
         getMessages();
+        userStateWatcher();
+    }
+
+    private void typingTimer(){
+        long timeInMillis = 2000;
+        chatRef.update("typersList", FieldValue.arrayUnion(ProfileHelper.getUserId()));
+        countDownTimer = new CountDownTimer(timeInMillis, timeInMillis/2) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+
+            }
+            @Override
+            public void onFinish() {
+                chatRef.update("typersList", FieldValue.arrayRemove(ProfileHelper.getUserId()));
+            }
+        };
+
+        countDownTimer.start();
+        isCountDownTimerRunning = true;
+    }
+
+
+    private void userStateWatcher(){
+        chatRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                        Chat chat = documentSnapshot.toObject(Chat.class);
+                        if(chat.getTypersList() != null && !chat.getTypersList().isEmpty()){
+                            for(String userTyping : chat.getTypersList()){
+                                if(!userTyping.equals(ProfileHelper.getUserId())){
+                                    toolbarSubtitle.setText("Digitando...");
+                                    break;
+                                }
+                            }
+                        }else{
+                            toolbarSubtitle.setText("Online");
+                        }
+                    }
+                });
     }
 
     private void sendMessage(){

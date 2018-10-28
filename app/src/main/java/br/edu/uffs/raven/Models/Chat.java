@@ -5,6 +5,7 @@ import com.google.firebase.firestore.ServerTimestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class Chat {
     private String id;
@@ -13,6 +14,7 @@ public class Chat {
     private String groupId;
     @ServerTimestamp
     private Date createdAt;
+    private List<String> typersList;
 
     public String getId() {
         return id;
@@ -52,5 +54,13 @@ public class Chat {
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
+    }
+
+    public List<String> getTypersList() {
+        return typersList;
+    }
+
+    public void setTypersList(List<String> typersList) {
+        this.typersList = typersList;
     }
 }

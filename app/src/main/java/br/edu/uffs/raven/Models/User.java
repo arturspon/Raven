@@ -11,6 +11,7 @@ public class User {
     private String picture;
     @ServerTimestamp
     private Date createdAt;
+    private boolean online;
 
     public String getId() {
         return id;
@@ -50,5 +51,13 @@ public class User {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public boolean isOnline() {
+        return online;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
     }
 }

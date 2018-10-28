@@ -17,7 +17,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".MainActivity" />
-        <activity android:name=".InsideChat.ChatActivity"></activity>
+        <activity
+            android:name=".InsideChat.ChatActivity"
+            android:theme="@style/Toolbar"/>
     </application>
 
 </manifest>
