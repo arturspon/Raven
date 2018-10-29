@@ -3,8 +3,10 @@ package br.edu.uffs.raven.Models;
 import com.google.firebase.firestore.ServerTimestamp;
 
 import java.util.Date;
+import java.util.List;
 
 public class User {
+    private List<String> contacts;
     private String id;
     private String email;
     private String name;
@@ -12,6 +14,14 @@ public class User {
     @ServerTimestamp
     private Date createdAt;
     private boolean online;
+
+    public List<String> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(List<String> contacts) {
+        this.contacts = contacts;
+    }
 
     public String getId() {
         return id;

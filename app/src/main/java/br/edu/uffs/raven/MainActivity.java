@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         fabNewChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                newChatDialog();
+                optionsDialog();
             }
         });
 
@@ -88,6 +88,28 @@ public class MainActivity extends AppCompatActivity {
                 getChats();
             }
         });
+    }
+
+    private void optionsDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Selecione uma opção:");
+        String[] options = new String[2];
+        options[0] = "Iniciar novo chat";
+        options[1] = "Ver contatos";
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                switch (i){
+                    case 0:
+                        newChatDialog();
+                        break;
+                    case 1:
+                        startActivity(new Intent(MainActivity.this, ContactsActivity.class));
+                        break;
+                }
+            }
+        });
+        builder.show();
     }
 
     private void newChatDialog(){
@@ -157,7 +179,21 @@ public class MainActivity extends AppCompatActivity {
                                                                             .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                                                                 @Override
                                                                                 public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                                                                    List<String> usersName = new ArrayList<>();
+                                                                                    List<String> usersIds;
+                                                                                    User user = documentSnapshot.toObject(User.class);
+                                                                                    if(user.getContacts() != null && !user.getContacts().contains(finalUserSearched.getId())){
+                                                                                        usersIds = user.getContacts();
+                                                                                        usersIds.add(finalUserSearched.getId());
+                                                                                        db.collection("users").document(ProfileHelper.getUserId())
+                                                                                                .update("contacts", usersIds);
+                                                                                    }else{
+                                                                                        usersIds = new ArrayList<>();
+                                                                                        usersIds.add(finalUserSearched.getId());
+                                                                                        user.setContacts(usersIds);
+                                                                                        db.collection("users").document(ProfileHelper.getUserId())
+                                                                                                .set(user);
+                                                                                    }
+                                                                                    final List<String> usersName = new ArrayList<>();
                                                                                     usersName.add(ProfileHelper.getUserName());
                                                                                     usersName.add(finalUserSearched.getName());
 
@@ -175,6 +211,8 @@ public class MainActivity extends AppCompatActivity {
                                                                                                     if(task.isSuccessful()){
                                                                                                         Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
                                                                                                         chatIntent.putExtra("chatId", newChatRef.getId());
+                                                                                                        chatIntent.putExtra("username", usersName.get(1));
+                                                                                                        dialog.dismiss();
                                                                                                         startActivity(chatIntent);
                                                                                                     }
                                                                                                 }

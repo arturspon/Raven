@@ -19,7 +19,8 @@
         <activity android:name=".MainActivity" />
         <activity
             android:name=".InsideChat.ChatActivity"
-            android:theme="@style/Toolbar"/>
+            android:theme="@style/Toolbar" />
+        <activity android:name=".ContactsActivity"></activity>
     </application>
 
 </manifest>
