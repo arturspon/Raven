@@ -95,6 +95,14 @@ public class MainActivity extends AppCompatActivity {
         final EditText etEmail = view.findViewById(R.id.etEmail);
         final Button btnStartChat = view.findViewById(R.id.btnStartChat);
 
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Email do destinatário");
+        builder.setView(view);
+        builder.setNegativeButton("Cancelar", null);
+
+        final Dialog dialog = builder.create();
+
         btnStartChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -134,36 +142,46 @@ public class MainActivity extends AppCompatActivity {
                                                                         chatIntent.putExtra("chatId", chat.getId());
                                                                         startActivity(chatIntent);
                                                                         chatFound = true;
+                                                                        dialog.dismiss();
                                                                         break;
                                                                     }
                                                                 }
                                                                 if(!chatFound){
                                                                     final DocumentReference newChatRef = db.collection("chats").document();
-                                                                    Chat chatToBeCreated = new Chat();
+                                                                    final Chat chatToBeCreated = new Chat();
                                                                     chatToBeCreated.setId(newChatRef.getId());
 
-                                                                    List<String> usersName = new ArrayList<>();
-                                                                    usersName.add(ProfileHelper.getUserName());
-                                                                    usersName.add(finalUserSearched.getName());
-
-                                                                    List<String> usersId = new ArrayList<>();
-                                                                    usersId.add(ProfileHelper.getUserId());
-                                                                    usersId.add(finalUserSearched.getId());
-
-                                                                    chatToBeCreated.setUsersName(usersName);
-                                                                    chatToBeCreated.setUsersIds(usersId);
-
-                                                                    newChatRef.set(chatToBeCreated)
-                                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                    db.collection("users")
+                                                                            .document(ProfileHelper.getUserId())
+                                                                            .get()
+                                                                            .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                                                                 @Override
-                                                                                public void onComplete(@NonNull Task<Void> task) {
-                                                                                    if(task.isSuccessful()){
-                                                                                        Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
-                                                                                        chatIntent.putExtra("chatId", newChatRef.getId());
-                                                                                        startActivity(chatIntent);
-                                                                                    }
+                                                                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                                                    List<String> usersName = new ArrayList<>();
+                                                                                    usersName.add(ProfileHelper.getUserName());
+                                                                                    usersName.add(finalUserSearched.getName());
+
+                                                                                    List<String> usersId = new ArrayList<>();
+                                                                                    usersId.add(ProfileHelper.getUserId());
+                                                                                    usersId.add(finalUserSearched.getId());
+
+                                                                                    chatToBeCreated.setUsersName(usersName);
+                                                                                    chatToBeCreated.setUsersIds(usersId);
+
+                                                                                    newChatRef.set(chatToBeCreated)
+                                                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                                @Override
+                                                                                                public void onComplete(@NonNull Task<Void> task) {
+                                                                                                    if(task.isSuccessful()){
+                                                                                                        Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
+                                                                                                        chatIntent.putExtra("chatId", newChatRef.getId());
+                                                                                                        startActivity(chatIntent);
+                                                                                                    }
+                                                                                                }
+                                                                                            });
                                                                                 }
                                                                             });
+
                                                                 }
                                                             }
                                                         }
@@ -197,11 +215,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Email do destinatário");
-        builder.setView(view);
-        builder.setNegativeButton("Cancelar", null);
-        builder.show();
+        dialog.show();
     }
 
     private void getChats(){
