@@ -1,5 +1,6 @@
 package br.edu.uffs.raven.InsideChat;
 
+import android.content.Intent;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
@@ -82,7 +83,14 @@ public class ChatActivity extends AppCompatActivity {
         toolbarTitle.setText(getIntent().getStringExtra("username"));
 
         // Get intent's data
-        chatId = getIntent().getStringExtra("chatId");
+        if(getIntent().getStringExtra("chatId") != null
+                && !getIntent().getStringExtra("chatId").isEmpty())
+            chatId = getIntent().getStringExtra("chatId");
+
+        if(chatId == null || chatId.isEmpty()){
+            Toast.makeText(this, "ERRO!!!!!!!!!!!11", Toast.LENGTH_SHORT).show();
+            finish();
+        }
 
         // Referencing
         rvChat = findViewById(R.id.rvChat);
@@ -338,6 +346,12 @@ public class ChatActivity extends AppCompatActivity {
             btnSendMsg.setText("Enviar");
             btnSendMsg.setEnabled(true);
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        chatId = intent.getStringExtra("chatId");
     }
 
     @Override
