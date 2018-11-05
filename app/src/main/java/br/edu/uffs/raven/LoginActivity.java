@@ -18,6 +18,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import br.edu.uffs.raven.InsideChat.ChatActivity;
 import br.edu.uffs.raven.Models.User;
 
 public class LoginActivity extends AppCompatActivity {
@@ -141,6 +142,17 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         finish();
+
+        // Intent data
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            String chatId = bundle.getString("chatId");
+            if(chatId != null){
+                Intent intent2 = new Intent(this, ChatActivity.class);
+                intent2.putExtra("chatId", chatId);
+                startActivity(intent2);
+            }
+        }
     }
 
     @Override
